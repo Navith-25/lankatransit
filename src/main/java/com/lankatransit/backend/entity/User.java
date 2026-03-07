@@ -16,11 +16,21 @@ public class User {
     private String name;
     private String email;
     private String phone;
-
-    @Column(name = "password_hash")
     private String passwordHash;
-
     private String role;
+    private String status;
+
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
+    @Column(name = "nic_front_url")
+    private String nicFrontUrl;
+
+    @Column(name = "nic_back_url")
+    private String nicBackUrl;
+
+    @Column(name = "license_photo_url")
+    private String licensePhotoUrl;
 
     @Column(name = "gamification_points")
     private Integer gamificationPoints;
