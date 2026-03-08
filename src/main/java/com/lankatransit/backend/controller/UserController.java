@@ -139,11 +139,6 @@ public class UserController {
 
         if (user != null && passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
 
-            if ("PENDING".equals(user.getStatus())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Your account is pending admin verification.");
-            }
-
             String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
             Map<String, Object> response = new HashMap<>();
@@ -151,6 +146,9 @@ public class UserController {
             response.put("role", user.getRole());
             response.put("email", user.getEmail());
             response.put("name", user.getName());
+
+            response.put("status", user.getStatus());
+            response.put("id", user.getId());
 
             return ResponseEntity.ok(response);
         } else {
