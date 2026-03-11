@@ -60,27 +60,40 @@ public class UserController {
 
     @PostMapping("/add-staff")
     public ResponseEntity<?> addStaff(@RequestBody User staffUser) {
-        String tempPassword = "Transit@123";
-        staffUser.setPasswordHash(passwordEncoder.encode(tempPassword));
 
-        if ("DRIVER".equals(staffUser.getRole())) {
-            staffUser.setStatus("PENDING");
-        } else if ("CONDUCTOR".equals(staffUser.getRole())) {
-            staffUser.setStatus("APPROVED");
-        } else {
-            staffUser.setStatus("PENDING");
+        if (userRepository.findByEmail(staffUser.getEmail()) != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "This email is already registered in the system!"));
         }
 
-        User savedUser = userRepository.save(staffUser);
+        try {
+            if (!"DRIVER".equals(staffUser.getRole()) && !"CONDUCTOR".equals(staffUser.getRole())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid role for staff."));
+            }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Staff added successfully");
-        response.put("id", savedUser.getId());
-        response.put("email", savedUser.getEmail());
-        response.put("temporaryPassword", tempPassword);
-        response.put("status", savedUser.getStatus());
+            String encryptedPassword = passwordEncoder.encode(staffUser.getPasswordHash());
+            staffUser.setPasswordHash(encryptedPassword);
 
-        return ResponseEntity.ok(response);
+            if ("DRIVER".equals(staffUser.getRole())) {
+                staffUser.setStatus("PENDING");
+            } else {
+                staffUser.setStatus("APPROVED");
+            }
+
+            User savedUser = userRepository.save(staffUser);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Staff account created successfully");
+            response.put("id", savedUser.getId());
+            response.put("email", savedUser.getEmail());
+            response.put("status", savedUser.getStatus());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Database error occurred"));
+        }
     }
 
     @PostMapping("/{id}/upload-profile-photo")
@@ -135,6 +148,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody com.lankatransit.backend.dto.LoginRequest loginRequest) {
+
         User user = userRepository.findByEmail(loginRequest.getEmail());
 
         if (user != null && passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
@@ -146,7 +160,6 @@ public class UserController {
             response.put("role", user.getRole());
             response.put("email", user.getEmail());
             response.put("name", user.getName());
-
             response.put("status", user.getStatus());
             response.put("id", user.getId());
 
