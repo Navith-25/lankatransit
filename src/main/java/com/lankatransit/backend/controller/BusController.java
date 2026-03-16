@@ -116,4 +116,13 @@ public class BusController {
         busRepository.save(bus);
         return ResponseEntity.ok("Registration Potha uploaded successfully!");
     }
+
+    @PostMapping("/{id}/upload-route-permit")
+    public ResponseEntity<?> uploadRoutePermit(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Bus bus = busRepository.findById(id).orElseThrow(() -> new RuntimeException("Bus not found"));
+        String fileName = fileStorageService.storeFile(file);
+        bus.setRoutePermitUrl("/uploads/" + fileName);
+        busRepository.save(bus);
+        return ResponseEntity.ok("Route Permit uploaded successfully!");
+    }
 }

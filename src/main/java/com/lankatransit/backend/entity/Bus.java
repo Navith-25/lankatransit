@@ -35,6 +35,9 @@ public class Bus {
     @Column(name = "registration_potha_url")
     private String registrationPothaUrl;
 
+    @Column(name = "route_permit_url")
+    private String routePermitUrl;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;
 }

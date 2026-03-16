@@ -193,6 +193,15 @@ public class UserController {
         return ResponseEntity.ok("Staff member deleted successfully!");
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+        return ResponseEntity.ok(user);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateStaff(@PathVariable Long id, @RequestBody User updatedUser) {
         User existingUser = userRepository.findById(id).orElse(null);
