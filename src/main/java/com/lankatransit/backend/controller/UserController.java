@@ -74,8 +74,8 @@ public class UserController {
             String encryptedPassword = passwordEncoder.encode(staffUser.getPasswordHash());
             staffUser.setPasswordHash(encryptedPassword);
 
-            if ("DRIVER".equals(staffUser.getRole())) {
-                staffUser.setStatus("PENDING");
+            if ("DRIVER".equals(staffUser.getRole()) || "CONDUCTOR".equals(staffUser.getRole())) {
+                staffUser.setStatus("CREATED");
             } else {
                 staffUser.setStatus("APPROVED");
             }
@@ -94,6 +94,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Database error occurred"));
         }
+    }
+
+    @PutMapping("/submit-docs/{id}")
+    public ResponseEntity<?> submitDocuments(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        user.setStatus("PENDING");
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Documents submitted successfully. Status updated to PENDING.");
     }
 
     @PostMapping("/{id}/upload-profile-photo")
@@ -144,6 +157,56 @@ public class UserController {
         userRepository.save(user);
 
         return ResponseEntity.ok(user.getName() + " is successfully APPROVED!");
+    }
+
+    @PutMapping("/reject/{id}")
+    public ResponseEntity<?> rejectUser(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        user.setStatus("REJECTED");
+        userRepository.save(user);
+        return ResponseEntity.ok(user.getName() + " is REJECTED!");
+    }
+
+    @PutMapping("/resubmit/{id}")
+    public ResponseEntity<?> resubmitUser(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        user.setStatus("RESUBMIT");
+        userRepository.save(user);
+        return ResponseEntity.ok(user.getName() + " needs to resubmit documents!");
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<User>> getStaffByOwner(@PathVariable Long ownerId) {
+        List<User> staff = userRepository.findByOwnerId(ownerId);
+        return ResponseEntity.ok(staff);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.ok("Staff member deleted successfully!");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateStaff(@PathVariable Long id, @RequestBody User updatedUser) {
+        User existingUser = userRepository.findById(id).orElse(null);
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        existingUser.setName(updatedUser.getName());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setPhone(updatedUser.getPhone());
+        existingUser.setRole(updatedUser.getRole());
+
+        userRepository.save(existingUser);
+        return ResponseEntity.ok("Staff updated successfully");
     }
 
     @PostMapping("/login")

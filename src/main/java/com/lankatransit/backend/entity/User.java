@@ -19,6 +19,7 @@ public class User {
     private String passwordHash;
     private String role;
     private String status;
+    private Long ownerId;
 
     @Column(name = "profile_photo_url")
     private String profilePhotoUrl;
