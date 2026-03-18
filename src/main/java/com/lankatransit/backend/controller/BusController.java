@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/buses")
@@ -124,5 +125,22 @@ public class BusController {
         bus.setRoutePermitUrl("/uploads/" + fileName);
         busRepository.save(bus);
         return ResponseEntity.ok("Route Permit uploaded successfully!");
+    }
+
+    @PutMapping("/{id}/assign-crew")
+    public ResponseEntity<?> assignCrew(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
+        Bus bus = busRepository.findById(id).orElse(null);
+        if (bus == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bus not found");
+        }
+
+        Long driverId = payload.get("driverId");
+        Long conductorId = payload.get("conductorId");
+
+        bus.setDriverId(driverId);
+        bus.setConductorId(conductorId);
+        busRepository.save(bus);
+
+        return ResponseEntity.ok("Crew assigned successfully to bus: " + bus.getBusNumber());
     }
 }

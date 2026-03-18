@@ -19,6 +19,12 @@ public class Bus {
     @Column(name = "route_id")
     private Long routeId;
 
+    @Column(name = "driver_id")
+    private Long driverId;
+
+    @Column(name = "conductor_id")
+    private Long conductorId;
+
     @Column(name = "bus_number")
     private String busNumber;
 
