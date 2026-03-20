@@ -16,6 +16,11 @@ public class TripController {
     @Autowired
     private TripRepository tripRepository;
 
+    @GetMapping("/active")
+    public ResponseEntity<?> getAllActiveTrips() {
+        return ResponseEntity.ok(tripRepository.findByStatus("ACTIVE"));
+    }
+
     @PostMapping("/start")
     public ResponseEntity<?> startTrip(@RequestBody Trip trip) {
         trip.setStatus("ONGOING");

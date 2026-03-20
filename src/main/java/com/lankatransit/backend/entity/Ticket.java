@@ -39,4 +39,7 @@ public class Ticket {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;
+
+    @Column(name = "scanned_bus_id")
+    private Long scannedBusId;
 }
