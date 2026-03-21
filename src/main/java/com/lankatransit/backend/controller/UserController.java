@@ -42,20 +42,37 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public User registerUser(@RequestBody User newUser) {
-        String encryptedPassword = passwordEncoder.encode(newUser.getPasswordHash());
-        newUser.setPasswordHash(encryptedPassword);
-
-        if (newUser.getRole() == null || newUser.getRole().isEmpty()) {
-            newUser.setRole("PASSENGER");
-            newUser.setStatus("APPROVED");
-        } else if (newUser.getRole().equals("OWNER")) {
-            newUser.setStatus("PENDING");
-        } else {
-            newUser.setStatus("APPROVED");
+    public ResponseEntity<?> registerUser(@RequestBody User newUser) {
+        if (userRepository.findByEmail(newUser.getEmail()) != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "This email is already registered!"));
         }
 
-        return userRepository.save(newUser);
+        try {
+            String encryptedPassword = passwordEncoder.encode(newUser.getPasswordHash());
+            newUser.setPasswordHash(encryptedPassword);
+
+            if (newUser.getRole() == null || newUser.getRole().isEmpty()) {
+                newUser.setRole("PASSENGER");
+                newUser.setStatus("APPROVED");
+            } else if (newUser.getRole().equals("OWNER")) {
+                newUser.setStatus("PENDING");
+            } else {
+                newUser.setStatus("APPROVED");
+            }
+
+            User savedUser = userRepository.save(newUser);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Registration successful",
+                    "id", savedUser.getId(),
+                    "email", savedUser.getEmail()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Registration failed due to server error"));
+        }
     }
 
     @PostMapping("/add-staff")
