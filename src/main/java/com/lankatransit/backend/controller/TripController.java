@@ -18,7 +18,7 @@ public class TripController {
 
     @GetMapping("/active")
     public ResponseEntity<?> getAllActiveTrips() {
-        return ResponseEntity.ok(tripRepository.findByStatus("ACTIVE"));
+        return ResponseEntity.ok(tripRepository.findByStatus("ONGOING"));
     }
 
     @PostMapping("/start")
