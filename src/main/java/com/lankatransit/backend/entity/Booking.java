@@ -18,4 +18,5 @@ public class Booking {
     private Double fare;
     private LocalDateTime bookingTime;
     private String userEmail;
+    private String status = "VALID";
 }

@@ -34,16 +34,18 @@ public class RouteController {
     public Route createRoute(@RequestBody Route route) {
         return routeRepository.save(route);
     }
+
     @GetMapping("/{routeId}/halts")
     public List<Halt> getHaltsByRoute(@PathVariable Long routeId) {
         return haltRepository.findByRouteIdOrderBySequenceOrderAsc(routeId);
     }
+
     @PostMapping("/{routeId}/halts")
     public Halt addHaltToRoute(@PathVariable Long routeId, @RequestBody Halt halt) {
         halt.setRouteId(routeId);
         return haltRepository.save(halt);
     }
-    
+
     @PostMapping("/book")
     public Booking saveBooking(@RequestBody Booking booking) {
         booking.setBookingTime(LocalDateTime.now());
@@ -53,5 +55,24 @@ public class RouteController {
     @GetMapping("/bookings/{email}")
     public List<Booking> getUserBookings(@PathVariable String email) {
         return bookingRepository.findByUserEmailOrderByBookingTimeDesc(email);
+    }
+
+    @PutMapping("/bookings/{id}/use")
+    public org.springframework.http.ResponseEntity<?> useTicket(@PathVariable Long id) {
+        java.util.Optional<Booking> optionalBooking = bookingRepository.findById(id);
+
+        if (optionalBooking.isPresent()) {
+            Booking booking = optionalBooking.get();
+
+            if ("USED".equals(booking.getStatus())) {
+                return org.springframework.http.ResponseEntity.badRequest().body("Ticket is already used.");
+            }
+
+            booking.setStatus("USED");
+            bookingRepository.save(booking);
+            return org.springframework.http.ResponseEntity.ok("Ticket successfully used.");
+        }
+
+        return org.springframework.http.ResponseEntity.notFound().build();
     }
 }
