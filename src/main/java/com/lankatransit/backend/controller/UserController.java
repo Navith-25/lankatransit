@@ -258,4 +258,10 @@ public class UserController {
                     .body("Invalid email or password");
         }
     }
+
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<User>> getUsersByRole(@PathVariable String role) {
+        List<User> users = userRepository.findByRole(role.toUpperCase());
+        return ResponseEntity.ok(users);
+    }
 }
