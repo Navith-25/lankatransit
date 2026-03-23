@@ -90,7 +90,6 @@ public class BusController {
         return ResponseEntity.ok(buses);
     }
 
-
     @PostMapping("/{id}/upload-revenue-license")
     public ResponseEntity<?> uploadRevenueLicense(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         Bus bus = busRepository.findById(id).orElseThrow(() -> new RuntimeException("Bus not found"));
@@ -142,5 +141,18 @@ public class BusController {
         busRepository.save(bus);
 
         return ResponseEntity.ok("Crew assigned successfully to bus: " + bus.getBusNumber());
+    }
+
+    // ALUTH: Bus eka suspend karanna method eka
+    @PutMapping("/suspend/{id}")
+    public ResponseEntity<String> suspendBus(@PathVariable Long id) {
+        Bus bus = busRepository.findById(id).orElse(null);
+        if (bus == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bus not found");
+        }
+        bus.setStatus("SUSPENDED");
+        bus.setApprovalStatus("SUSPENDED");
+        busRepository.save(bus);
+        return ResponseEntity.ok("Bus " + bus.getBusNumber() + " is now SUSPENDED!");
     }
 }

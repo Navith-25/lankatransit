@@ -1,13 +1,18 @@
 package com.lankatransit.backend.controller;
 
 import com.lankatransit.backend.entity.User;
+import com.lankatransit.backend.entity.Ticket;
+import com.lankatransit.backend.entity.Booking;
 import com.lankatransit.backend.repository.UserRepository;
+import com.lankatransit.backend.repository.TicketRepository;
+import com.lankatransit.backend.repository.BookingRepository;
 import com.lankatransit.backend.security.JwtUtil;
 import com.lankatransit.backend.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +35,13 @@ public class UserController {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    // ALUTH: Transaction data makanna me repositories dekath add kala
+    @Autowired
+    private TicketRepository ticketRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -204,10 +216,41 @@ public class UserController {
         return ResponseEntity.ok(staff);
     }
 
+    // ALUTH: Account delete weddi Tickets & Bookings okkoma makila yanna hadala thiyenne
+    @Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userRepository.deleteById(id);
-        return ResponseEntity.ok("Staff member deleted successfully!");
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            // 1. Userge Tickets makala danawa
+            List<Ticket> tickets = ticketRepository.findByPassengerId(id);
+            if(tickets != null && !tickets.isEmpty()){
+                ticketRepository.deleteAll(tickets);
+            }
+
+            // 2. Userge Bookings makala danawa (email eken filter karala)
+            List<Booking> bookings = bookingRepository.findByUserEmail(user.getEmail());
+            if(bookings != null && !bookings.isEmpty()){
+                bookingRepository.deleteAll(bookings);
+            }
+
+            // 3. Anthimata Userwa makanawa
+            userRepository.deleteById(id);
+            return ResponseEntity.ok("User and all related transaction data deleted successfully!");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found!");
+    }
+
+    // ALUTH: Staff wa suspend karana endpoint eka
+    @PutMapping("/suspend/{id}")
+    public ResponseEntity<?> suspendUser(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        user.setStatus("SUSPENDED");
+        userRepository.save(user);
+        return ResponseEntity.ok(user.getName() + " is now SUSPENDED!");
     }
 
     @GetMapping("/{id}")

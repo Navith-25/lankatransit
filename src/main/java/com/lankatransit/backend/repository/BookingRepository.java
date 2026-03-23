@@ -11,6 +11,7 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByUserEmailOrderByBookingTimeDesc(String userEmail);
+    List<Booking> findByUserEmail(String userEmail);
 
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.routeId = :routeId AND b.status = 'USED'")
     Long countUsedTicketsByRoute(@Param("routeId") Long routeId);
