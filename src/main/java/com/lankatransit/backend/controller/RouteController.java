@@ -75,4 +75,36 @@ public class RouteController {
 
         return org.springframework.http.ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> updateRoute(@PathVariable Long id, @RequestBody Route updatedRoute) {
+        java.util.Optional<Route> existingRoute = routeRepository.findById(id);
+
+        if (existingRoute.isPresent()) {
+            Route route = existingRoute.get();
+            route.setRouteNumber(updatedRoute.getRouteNumber());
+            route.setStartLocation(updatedRoute.getStartLocation());
+            route.setEndLocation(updatedRoute.getEndLocation());
+            route.setBaseFarePerKm(updatedRoute.getBaseFarePerKm());
+            routeRepository.save(route);
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "Route updated successfully!"));
+        }
+
+        return org.springframework.http.ResponseEntity.notFound().build();
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> deleteRoute(@PathVariable Long id) {
+        if (routeRepository.existsById(id)) {
+            List<Halt> halts = haltRepository.findByRouteIdOrderBySequenceOrderAsc(id);
+            if (halts != null && !halts.isEmpty()) {
+                haltRepository.deleteAll(halts);
+            }
+
+            routeRepository.deleteById(id);
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "Route deleted successfully!"));
+        }
+        return org.springframework.http.ResponseEntity.notFound().build();
+    }
 }
