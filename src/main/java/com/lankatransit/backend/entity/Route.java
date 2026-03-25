@@ -24,4 +24,16 @@ public class Route {
 
     @Column(name = "base_fare_per_km")
     private BigDecimal baseFarePerKm;
+
+    @Column(name = "start_latitude")
+    private Double startLatitude;
+
+    @Column(name = "start_longitude")
+    private Double startLongitude;
+
+    @Column(name = "end_latitude")
+    private Double endLatitude;
+
+    @Column(name = "end_longitude")
+    private Double endLongitude;
 }

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,6 @@ public class RouteController {
     @Autowired
     private BookingRepository bookingRepository;
 
-    // ----- DTOs for Smart Search Response -----
     @Data
     public static class SmartSearchResponse {
         private String startHaltName;
@@ -46,7 +44,6 @@ public class RouteController {
         private String fullRouteName;
         private double calculatedFare;
     }
-    // ------------------------------------------
 
     @GetMapping
     public List<Route> getAllRoutes() {
@@ -69,9 +66,6 @@ public class RouteController {
         return haltRepository.save(halt);
     }
 
-    // ========================================================================
-    // Smart Node-to-Node Search API
-    // ========================================================================
     @GetMapping("/smart-search")
     public ResponseEntity<?> searchSmartRoutes(
             @RequestParam double startLat,
@@ -100,8 +94,6 @@ public class RouteController {
                     if (nearestStart.getSequenceOrder() < nearestEnd.getSequenceOrder()) {
 
                         double travelDistance = nearestEnd.getDistanceFromStart().doubleValue() - nearestStart.getDistanceFromStart().doubleValue();
-
-                        // FIX: Converted BigDecimal baseFarePerKm to double before multiplying
                         double fare = travelDistance * route.getBaseFarePerKm().doubleValue();
 
                         MatchedRoute matched = new MatchedRoute();
@@ -162,8 +154,6 @@ public class RouteController {
         return R * c;
     }
 
-    // ========================================================================
-
     @PostMapping("/book")
     public Booking saveBooking(@RequestBody Booking booking) {
         booking.setBookingTime(LocalDateTime.now());
@@ -204,6 +194,12 @@ public class RouteController {
             route.setStartLocation(updatedRoute.getStartLocation());
             route.setEndLocation(updatedRoute.getEndLocation());
             route.setBaseFarePerKm(updatedRoute.getBaseFarePerKm());
+
+            if (updatedRoute.getStartLatitude() != null) route.setStartLatitude(updatedRoute.getStartLatitude());
+            if (updatedRoute.getStartLongitude() != null) route.setStartLongitude(updatedRoute.getStartLongitude());
+            if (updatedRoute.getEndLatitude() != null) route.setEndLatitude(updatedRoute.getEndLatitude());
+            if (updatedRoute.getEndLongitude() != null) route.setEndLongitude(updatedRoute.getEndLongitude());
+
             routeRepository.save(route);
             return ResponseEntity.ok(java.util.Map.of("message", "Route updated successfully!"));
         }
