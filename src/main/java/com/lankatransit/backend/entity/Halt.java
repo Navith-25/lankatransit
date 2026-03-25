@@ -22,8 +22,8 @@ public class Halt {
     @Column(name = "sequence_order")
     private Integer sequenceOrder;
 
-    private BigDecimal latitude;
-    private BigDecimal longitude;
+    private Double latitude;
+    private Double longitude;
 
     @Column(name = "distance_from_start")
     private BigDecimal distanceFromStart;
